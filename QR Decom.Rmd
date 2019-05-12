@@ -1,0 +1,71 @@
+---
+title: "RGS & MGS"
+author: "刘思加 16342114 应用统计学"
+date: "2019/3/16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+RGS方法
+```{r}
+RGS=function(x){
+  n=dim(x)[1]
+  p=dim(x)[2]
+  R=matrix(0,nrow=p,ncol=p)
+  Q=matrix(0,nrow=n,ncol=p)
+  R[1,1]=t(x[,1]) %*% x[,1]
+  Q[,1]=x[,1]/R[1,1]
+  for (j in 2:p) {
+    Q[,j]=x[,j]
+    for (k in 1:(j-1)) {
+      R[k,j]=t(x[,j]) %*% Q[,k]
+      Q[,j]=Q[,j]-R[k,j]*Q[,k]
+    }
+    R[j,j]=t(Q[,j]) %*% Q[,j]
+    Q[,j]=Q[,j]/R[j,j]
+  }
+  return(list(Q=Q,R=R))
+}
+```
+MGS方法
+```{r}
+MGS=function(x){
+  n=dim(x)[1]
+  p=dim(x)[2]
+  R=matrix(0,nrow=p,ncol=p)
+  j=1
+  while (j<=p) {
+    R[j,j]=t(x[,j]) %*% x[,j]
+    x[,j]=x[,j]/R[j,j]
+    k=j+1
+    while (k<=p) {
+      R[j,k]=t(x[,j]) %*% x[,k]
+      x[,k]=x[,k]-(R[j,k] %*% (R[j,k]*x[,j]))
+      k=k+1
+    }
+    j=j+1
+  }
+  return(list(Q=x,R=R))
+}
+```
+测试数据
+```{r}
+X=matrix(c(1,1,4,2,2,1,3,1,5,4,3,7),nrow=4,ncol=3,byrow=T)
+X
+```
+```{r}
+#RGS
+Q1=RGS(X)$Q
+R1=RGS(X)$R
+list(Q=Q1,R=R1,QR=Q1%*%R1)
+```
+```{r}
+#MGS
+Q2=MGS(X)$Q
+R2=MGS(X)$R
+list(Q=Q2,R=R2,QR=Q2%*%R2)
+
+```
+
