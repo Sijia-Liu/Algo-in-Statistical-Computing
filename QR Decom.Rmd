@@ -1,9 +1,4 @@
----
-title: "RGS & MGS"
-author: "刘思加 16342114 应用统计学"
-date: "2019/3/16"
-output: html_document
----
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
