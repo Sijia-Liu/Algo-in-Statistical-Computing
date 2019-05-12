@@ -1,0 +1,98 @@
+---
+title: "Cholesky"
+author: "刘思加 16342114 应用统计学"
+date: "2019/3/14"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+解下三角方程
+```{r}
+Solve_equation=function(L,b){
+  n=dim(L)[1]
+  x=matrix(data=0,nrow=n,ncol=1)
+  if (n==1){
+    x=b[1]/L[1]
+  }else{
+    x[1]=b[1]/L[1,1]#对第一行求解
+    k=2
+    while (k<=n) {
+      S=L[k,] %*% x
+      S=sum(S)
+      x[k]=(b[k]-S)/L[k,k]
+      k=k+1
+    }
+    }
+    x=as.matrix(x)
+}
+```
+Cholesky Decomposition
+```{r}
+Cho_decom=function(A){
+  n=dim(A)[1]
+  if (n==1){
+    L=sqrt(A[1,1])
+    return(L)
+  }else{
+    l11=sqrt(A[1,1])
+    l21=A[1,2]/l11
+    l22=sqrt(A[2,2]-l21*l21)
+    L=matrix(c(l11,0,l21,l22),nrow=2,byrow = T)
+    if (n==2){
+      return(L)
+    }else{
+      k=3
+      while (k<=n){
+        Ak=A[1:k,1:k]#取代数余子式
+        akk=A[k,k]
+        ak=A[1:(k-1),k]
+        lk=Solve_equation(L,ak)#由L%*%l=ak解出l
+        lkk=sqrt(akk-t(lk) %*% lk)
+        null=matrix(data=0,nrow=k-1,ncol=1)
+        L=cbind(L,null)
+        lk=rbind(lk,lkk)
+        L=rbind(L,t(lk))
+        k=k+1
+      }
+      return(L)
+    }
+  }
+}
+```
+数据测试
+```{r}
+X=matrix(c(1,2,3,1,0,0,2,1,1),nrow=3)
+Y=matrix(c(3,2,5))
+```
+计算(X^TX)^-1
+```{r}
+XT=t(X)
+A=XT %*% X
+L=Cho_decom(A) #转换为求L^TL的逆
+L
+```
+```{r}
+L %*% t(L)#与A一致
+```
+
+```{r}
+l=solve(L)
+A_inverse=t(l) %*% l
+A_inverse%*% A #大约为单位阵 
+```
+求beta hat
+```{r}
+beta=A_inverse %*% XT %*% Y
+```
+求SSE
+```{r}
+a=XT %*% Y
+x=Solve_equation(L,a)
+sse=t(Y)%*%Y-t(x)%*%x
+```
+
+
